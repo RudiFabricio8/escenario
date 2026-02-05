@@ -3,9 +3,9 @@ services:
     image: postgres:15-alpine
     container_name: escenario_db
     environment:
-      POSTGRES_DB: escenario_db
+      POSTGRES_DB: academia_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: superpassword123
+      POSTGRES_PASSWORD: supersecretpassword
     ports:
       - "5432:5432"
     volumes:

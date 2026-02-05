@@ -1,9 +1,9 @@
 import { Pool } from 'pg';
 
 export const pool = new Pool({
-  user: 'app_escenario',
+  user: 'app_user',
   host: 'localhost',
   database: 'academia_db',
-  password: 'app_pass_123',
+  password: 'app_secure_123',
   port: 5432,
 });
