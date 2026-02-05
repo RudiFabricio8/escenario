@@ -34,3 +34,13 @@ SELECT s.name, s.program, g.term, AVG(gr.final) as score,
        RANK() OVER (PARTITION BY s.program, g.term ORDER BY AVG(gr.final) DESC) as ranking
 FROM students s JOIN enrollments e ON s.id = e.student_id JOIN groups g ON e.group_id = g.id JOIN grades gr ON gr.enrollment_id = e.id
 GROUP BY s.name, s.program, g.term;
+-- Asistencia promedio por grupo (term).
+CREATE VIEW vw_attendance_by_group AS
+SELECT g.term, c.name as course, t.name as teacher,
+       COALESCE(AVG(CASE WHEN a.present THEN 100.0 ELSE 0.0 END), 0) as attendance_pct
+FROM groups g
+JOIN courses c ON g.course_id = c.id
+JOIN teachers t ON g.teacher_id = t.id
+JOIN enrollments e ON e.group_id = g.id
+LEFT JOIN attendance a ON a.enrollment_id = e.id
+GROUP BY g.term, c.name, t.name;
