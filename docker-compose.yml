@@ -1,4 +1,18 @@
 services:
+  app:
+    build: .
+    container_name: escenario_app
+    ports:
+      - "3000:3000"
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=app_user
+      - POSTGRES_PASSWORD=app_secure_123
+      - POSTGRES_DB=academia_db
+    depends_on:
+      - db
+    restart: always
+
   db:
     image: postgres:15-alpine
     container_name: escenario_db
