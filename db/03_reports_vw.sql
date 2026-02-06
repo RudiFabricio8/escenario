@@ -43,4 +43,6 @@ JOIN courses c ON g.course_id = c.id
 JOIN teachers t ON g.teacher_id = t.id
 JOIN enrollments e ON e.group_id = g.id
 LEFT JOIN attendance a ON a.enrollment_id = e.id
-GROUP BY g.term, c.name, t.name;
+
+GROUP BY g.term, c.name, t.name
+HAVING COUNT(e.id) > 0;
