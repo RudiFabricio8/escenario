@@ -27,7 +27,7 @@ export default async function WorkloadPage(props: {
                 <p className="text-gray-600">Grupos y alumnos totales por docente (HAVING).</p>
             </div>
 
-            {/* Filtro Simple */}
+            {/* Filtro */}
             <form className="mb-8 p-4 bg-gray-50 rounded border border-gray-200 flex items-end gap-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Periodo (Term)</label>
@@ -47,7 +47,7 @@ export default async function WorkloadPage(props: {
 
             {term ? (
                 <>
-                    {/* KPI Simple con MetricCard */}
+                    {/* KPI */}
                     <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         <MetricCard label="Docentes en Página" value={data.length} />
                     </div>

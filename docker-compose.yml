@@ -3,12 +3,13 @@ services:
     build: .
     container_name: escenario_app
     ports:
-      - "3000:3000"
+      - "3005:3000"
     environment:
       - POSTGRES_HOST=db
-      - POSTGRES_USER=app_user
-      - POSTGRES_PASSWORD=app_secure_123
-      - POSTGRES_DB=academia_db
+      - POSTGRES_USER=${POSTGRES_USER:-app_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app_secure_123}
+      - POSTGRES_DB=${POSTGRES_DB:-academia_db}
+      - POSTGRES_PORT=5432
     depends_on:
       - db
     restart: always
@@ -20,6 +21,9 @@ services:
       POSTGRES_DB: academia_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: supersecretpassword
+      # Credenciales para el usuario de la aplicación (usadas por 04_roles.sh)
+      APP_USER: ${POSTGRES_USER:-app_user}
+      APP_PASSWORD: ${POSTGRES_PASSWORD:-app_secure_123}
     ports:
       - "5434:5432"
     volumes:

@@ -1,7 +1,8 @@
 import { getStudentsAtRisk } from '@/lib/data';
-import { StudentAtRisk } from '@/lib/definitions';
+import { StudentAtRisk, StudentsAtRiskResponse } from '@/lib/definitions';
 import Link from 'next/link';
 import MetricCard from '@/components/MetricCard';
+import { APP_CONFIG } from '@/lib/constants';
 
 export default async function RiskPage(props: {
     searchParams: Promise<{ q?: string; page?: string }>;
@@ -10,7 +11,6 @@ export default async function RiskPage(props: {
     const search = searchParams.q || '';
     const currentPage = Number(searchParams.page) || 1;
 
-    // Cargar datos
     const { data, metadata } = await getStudentsAtRisk(search, currentPage);
 
     return (
@@ -18,7 +18,7 @@ export default async function RiskPage(props: {
             <div className="mb-6">
                 <Link href="/" className="text-blue-600 hover:underline mb-2 inline-block">&larr; Volver al Dashboard</Link>
                 <h1 className="text-2xl font-bold text-red-700">Alumnos en Riesgo</h1>
-                <p className="text-gray-600">Alumnos con promedio &lt; 6.0 o asistencia &lt; 80%.</p>
+                <p className="text-gray-600">Alumnos con promedio &lt; {APP_CONFIG.THRESHOLDS.GRADE_RISK.toFixed(1)} o asistencia &lt; {APP_CONFIG.THRESHOLDS.ATTENDANCE_RISK}%.</p>
             </div>
 
             {/* Buscador de Alumnos */}
@@ -44,7 +44,7 @@ export default async function RiskPage(props: {
                 </div>
             </form>
 
-            {/* KPIs Rápidos */}
+            {/* KPIs */}
             <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <MetricCard label="Alumnos Detectados" value={metadata?.total_pages ? 'Ver tabla' : data.length} highlight={data.length > 0} />
             </div>
@@ -65,27 +65,23 @@ export default async function RiskPage(props: {
                         {data.length === 0 ? (
                             <tr>
                                 <td colSpan={5} className="p-8 text-center text-gray-500">
-                                    ✅ No se encontraron alumnos en riesgo {search ? `con el término "${search}"` : ''}.
+                                    No se encontraron alumnos en riesgo {search ? `con el término "${search}"` : ''}.
                                 </td>
                             </tr>
                         ) : (
-                            data.map((student, i) => {
-                                const isGradeRisk = Number(student.avg_score) < 6;
-                                const isAttendanceRisk = Number(student.attendance_rate) < 80;
-
+                            data.map((student: StudentAtRisk, i: number) => {
                                 return (
                                     <tr key={i} className="border-b last:border-0 hover:bg-red-50">
                                         <td className="p-3 font-medium">{student.name}</td>
                                         <td className="p-3 text-sm text-gray-600">{student.email}</td>
-                                        <td className={`p-3 font-mono ${isGradeRisk ? 'text-red-600 font-bold' : ''}`}>
+                                        <td className={`p-3 font-mono ${student.isGradeRisk ? 'text-red-600 font-bold' : ''}`}>
                                             {Number(student.avg_score).toFixed(2)}
                                         </td>
-                                        <td className={`p-3 font-mono ${isAttendanceRisk ? 'text-red-600 font-bold' : ''}`}>
+                                        <td className={`p-3 font-mono ${student.isAttendanceRisk ? 'text-red-600 font-bold' : ''}`}>
                                             {Number(student.attendance_rate).toFixed(1)}%
                                         </td>
                                         <td className="p-3 text-sm">
-                                            {isGradeRisk && isAttendanceRisk ? '🚨 Académico y Asistencia' :
-                                                isGradeRisk ? '📚 Bajo Rendimiento' : '📅 Inasistencias'}
+                                            {student.mainCause}
                                         </td>
                                     </tr>
                                 );

@@ -1,0 +1,11 @@
+export const APP_CONFIG = {
+  PAGINATION: {
+    ITEMS_PER_PAGE: 10,
+  },
+  THRESHOLDS: {
+    GRADE_RISK: 6.0,
+    ATTENDANCE_RISK: 80,
+    LOW_ATTENDANCE_GROUP: 85,
+  },
+  PROGRAMS: ['ISC', 'IND', 'MEC', 'ADM'],
+};

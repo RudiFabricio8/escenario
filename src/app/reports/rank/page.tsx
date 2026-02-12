@@ -1,9 +1,10 @@
 import { getRankStudents } from '@/lib/data';
 import { RankStudent } from '@/lib/definitions';
 import Link from 'next/link';
+import { APP_CONFIG } from '@/lib/constants';
 
-// Whitelist de programas permitidos
-const PROGRAMS = ['ISC', 'IND', 'MEC', 'ADM'];
+// Programas permitidos
+const PROGRAMS = APP_CONFIG.PROGRAMS;
 
 export default async function RankPage(props: {
     searchParams: Promise<{ term?: string; program?: string }>;
@@ -14,7 +15,7 @@ export default async function RankPage(props: {
 
     let data: RankStudent[] = [];
 
-    // Solo buscamos si ambos filtros están presentes
+    // Solo buscar si ambos filtros están presentes
     if (term && program) {
         data = await getRankStudents(term, program);
     }
@@ -27,14 +28,14 @@ export default async function RankPage(props: {
                 <p className="text-gray-600">Top estudiantes por programa y periodo (Window Functions).</p>
             </div>
 
-            {/* Filtros Dobles */}
+            {/* Filtros */}
             <form className="mb-8 p-4 bg-gray-50 rounded border border-gray-200 flex items-end gap-4 flex-wrap">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Periodo</label>
                     <input
                         name="term"
                         defaultValue={term}
-                        placeholder="Ej. 2024A"
+                        placeholder="Ej. 2024-A"
                         className="border p-2 rounded w-40"
                         required
                     />
@@ -62,7 +63,7 @@ export default async function RankPage(props: {
 
             {term && program ? (
                 <>
-                    {/* Tabla de Ranking */}
+                    {/* Ranking */}
                     <div className="border rounded overflow-hidden shadow-sm mb-6">
                         <table className="w-full text-left bg-white">
                             <thead className="bg-purple-50 text-purple-900">
@@ -82,7 +83,7 @@ export default async function RankPage(props: {
                                     </tr>
                                 ) : (
                                     data.map((row, i) => {
-                                        // Destacar el Top 3
+                                        // Destacar Top 3
                                         const isTop3 = Number(row.ranking) <= 3;
                                         return (
                                             <tr key={i} className={`border-b last:border-0 hover:bg-purple-50 ${isTop3 ? 'bg-purple-50/30' : ''}`}>

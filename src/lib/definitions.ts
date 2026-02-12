@@ -15,6 +15,13 @@ export const CoursePerformanceSchema = z.object({
   failed_count: z.coerce.number(),
 });
 export type CoursePerformance = z.infer<typeof CoursePerformanceSchema>;
+export interface CoursePerformanceResponse {
+  data: CoursePerformance[];
+  kpis: {
+    globalAvg: string;
+    totalFailed: number;
+  };
+}
 
 export const TeacherLoadSchema = z.object({
   teacher: z.string(),
@@ -30,7 +37,18 @@ export const StudentAtRiskSchema = z.object({
   avg_score: z.coerce.number(),
   attendance_rate: z.coerce.number(),
 });
-export type StudentAtRisk = z.infer<typeof StudentAtRiskSchema>;
+export type StudentAtRisk = z.infer<typeof StudentAtRiskSchema> & {
+  isGradeRisk: boolean;
+  isAttendanceRisk: boolean;
+  mainCause: string;
+};
+export interface StudentsAtRiskResponse {
+  data: StudentAtRisk[];
+  metadata: {
+    valid_page: number;
+    total_pages: number;
+  };
+}
 
 export const RankStudentSchema = z.object({
   name: z.string(),
@@ -48,3 +66,10 @@ export const AttendanceByGroupSchema = z.object({
   attendance_pct: z.coerce.number(),
 });
 export type AttendanceByGroup = z.infer<typeof AttendanceByGroupSchema>;
+export interface AttendanceResponse {
+  data: AttendanceByGroup[];
+  kpis: {
+    lowAttendanceGroups: number;
+    bestGroup: AttendanceByGroup | null;
+  };
+}

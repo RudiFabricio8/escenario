@@ -1,7 +1,8 @@
 import { getAttendanceByGroup } from '@/lib/data';
-import { AttendanceByGroup } from '@/lib/definitions';
+import { AttendanceByGroup, AttendanceResponse } from '@/lib/definitions';
 import Link from 'next/link';
 import MetricCard from '@/components/MetricCard';
+import { APP_CONFIG } from '@/lib/constants';
 
 export default async function AttendancePage(props: {
     searchParams: Promise<{ term?: string }>;
@@ -9,15 +10,13 @@ export default async function AttendancePage(props: {
     const searchParams = await props.searchParams;
     const term = searchParams.term || '';
 
-    let data: AttendanceByGroup[] = [];
-
+    let result: AttendanceResponse | null = null;
     if (term) {
-        data = await getAttendanceByGroup(term);
+        result = await getAttendanceByGroup(term);
     }
 
-    // KPIs
-    const lowAttendanceGroups = data.filter(g => Number(g.attendance_pct) < 85).length;
-    const bestGroup = data.length > 0 ? data[data.length - 1] : null; // Ordenado ASC en SQL, el último es el mejor
+    const data = result?.data || [];
+    const kpis = result?.kpis || { lowAttendanceGroups: 0, bestGroup: null };
 
     return (
         <div className="p-8 max-w-5xl mx-auto font-sans text-gray-800">
@@ -27,14 +26,14 @@ export default async function AttendancePage(props: {
                 <p className="text-gray-600">Porcentaje de asistencia promedio por grupo.</p>
             </div>
 
-            {/* Filtro Simple */}
+            {/* Filtro */}
             <form className="mb-8 p-4 bg-gray-50 rounded border border-gray-200 flex items-end gap-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Periodo</label>
                     <input
                         name="term"
                         defaultValue={term}
-                        placeholder="Ej. 2024A"
+                        placeholder="Ej. 2024-A"
                         className="border p-2 rounded w-48"
                         required
                         autoFocus
@@ -50,19 +49,19 @@ export default async function AttendancePage(props: {
                     {/* KPIs */}
                     <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
                         <MetricCard
-                            label="Grupos < 85% Asistencia"
-                            value={lowAttendanceGroups}
-                            highlight={lowAttendanceGroups > 0}
+                            label={`Grupos < ${APP_CONFIG.THRESHOLDS.LOW_ATTENDANCE_GROUP}% Asistencia`}
+                            value={kpis.lowAttendanceGroups}
+                            highlight={kpis.lowAttendanceGroups > 0}
                         />
-                        {bestGroup && (
+                        {kpis.bestGroup && (
                             <MetricCard
                                 label="Mejor Asistencia"
-                                value={`${Number(bestGroup.attendance_pct).toFixed(1)}% (${bestGroup.course})`}
+                                value={`${Number(kpis.bestGroup.attendance_pct).toFixed(1)}% (${kpis.bestGroup.course})`}
                             />
                         )}
                     </div>
 
-                    {/* Tabla con Barras Visuales */}
+                    {/* Tabla con Barras */}
                     <div className="border rounded overflow-hidden shadow-sm mb-6">
                         <table className="w-full text-left bg-white">
                             <thead className="bg-gray-100 text-gray-700">
@@ -81,7 +80,7 @@ export default async function AttendancePage(props: {
                                         </td>
                                     </tr>
                                 ) : (
-                                    data.map((row, i) => {
+                                    data.map((row: AttendanceByGroup, i: number) => {
                                         const pct = Number(row.attendance_pct);
                                         const isLow = pct < 85;
 
@@ -93,7 +92,7 @@ export default async function AttendancePage(props: {
                                                     {pct.toFixed(1)}%
                                                 </td>
                                                 <td className="p-3 align-middle">
-                                                    {/* Barra de Progreso Simple (Tailwind) */}
+                                                    {/* Barra de Progreso */}
                                                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                                                         <div
                                                             className={`h-2.5 rounded-full ${isLow ? 'bg-red-500' : 'bg-green-500'}`}

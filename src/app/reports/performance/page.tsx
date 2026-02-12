@@ -1,5 +1,5 @@
 import { getCoursePerformance } from '@/lib/data';
-import { CoursePerformance } from '@/lib/definitions';
+import { CoursePerformance, CoursePerformanceResponse } from '@/lib/definitions';
 import Link from 'next/link';
 import MetricCard from '@/components/MetricCard';
 
@@ -9,16 +9,13 @@ export default async function PerformancePage(props: {
     const searchParams = await props.searchParams;
     const term = searchParams.term || '';
 
-    let data: CoursePerformance[] = [];
+    let result: CoursePerformanceResponse | null = null;
     if (term) {
-        data = await getCoursePerformance(term);
+        result = await getCoursePerformance(term);
     }
 
-    // KPIs simples
-    const totalFailed = data.reduce((acc, curr) => acc + Number(curr.failed_count), 0);
-    const globalAvg = data.length > 0
-        ? (data.reduce((acc, curr) => acc + Number(curr.avg_grade), 0) / data.length).toFixed(2)
-        : '-';
+    const data = result?.data || [];
+    const kpis = result?.kpis || { globalAvg: '-', totalFailed: 0 };
 
     return (
         <div className="p-8 max-w-5xl mx-auto font-sans text-gray-800">
@@ -28,14 +25,14 @@ export default async function PerformancePage(props: {
                 <p className="text-gray-600">Análisis de calificaciones y reprobación por periodo.</p>
             </div>
 
-            {/* Filtro Simple */}
+            {/* Filtro */}
             <form className="mb-8 p-4 bg-gray-50 rounded border border-gray-200 flex items-end gap-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Periodo (Term)</label>
                     <input
                         name="term"
                         defaultValue={term}
-                        placeholder="Ej. 2024A"
+                        placeholder="Ej. 2024-A"
                         className="border p-2 rounded w-48"
                         required
                         autoFocus
@@ -50,8 +47,8 @@ export default async function PerformancePage(props: {
                 <>
                     {/* Tarjetas KPI */}
                     <div className="grid grid-cols-2 gap-4 mb-6 max-w-md">
-                        <MetricCard label="Promedio General" value={globalAvg} />
-                        <MetricCard label="Total Reprobados" value={totalFailed} highlight={totalFailed > 0} />
+                        <MetricCard label="Promedio General" value={kpis.globalAvg} />
+                        <MetricCard label="Total Reprobados" value={kpis.totalFailed} highlight={kpis.totalFailed > 0} />
                     </div>
 
                     {/* Tabla de Resultados */}
@@ -73,7 +70,7 @@ export default async function PerformancePage(props: {
                                         </td>
                                     </tr>
                                 ) : (
-                                    data.map((row, i) => (
+                                    data.map((row: CoursePerformance, i: number) => (
                                         <tr key={i} className="border-b last:border-0 hover:bg-gray-50">
                                             <td className="p-3">{row.course}</td>
                                             <td className="p-3">{row.term}</td>
